@@ -2,7 +2,7 @@
 
 一个基于 **Spring Boot 3 + Vue 3** 的前后端分离音乐网站。本仓库将原开源项目的三个子项目整合在一起，并附带数据库脚本，方便一次性克隆、部署和运行。
 
-本项目参照以下三个上游仓库（致谢原作者），功能与结构上与其保持一致：
+本项目参照以下三个上游仓库（致谢原作者(https://github.com/Alex-LiSun/vibe-music-server/commits?author=Alex-LiSun)），功能与结构上与其保持一致：
 
 - [Vibe Music Server](https://github.com/Alex-LiSun/vibe-music-server) — 后端 API 服务
 - [Vibe Music Admin](https://github.com/Alex-LiSun/vibe-music-admin) — 后台管理系统
