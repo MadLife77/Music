@@ -30,16 +30,10 @@
 ├── music-admin/        # 管理端（Vue3 + Vite，端口 8089）
 ├── music-client/       # 用户端（Vue3 + Vite，端口 8090）
 ├── music-server/       # 后端（Spring Boot，端口 8080）
-├── music.sql           # 数据库建表 + 种子数据（11 张表）
-├── IDE启动指南.md       # VS Code 启动前端 + IDEA 启动后端
-├── 启动使用手册.md      # 命令行完整启动手册
-├── 本地部署说明.md      # 部署原理、环境准备、MinIO 资源恢复
-├── 封面上传修复报告.md  # 封面/头像上传 bug 修复记录
-├── Copilot改动修复报告.md # Copilot 误改 Java 版本等问题的修复记录
-└── 环境安装配置报告.md  # Node/pnpm/MinIO/JDK 安装与环境变量
+└── music.sql           # 数据库建表 + 种子数据（11 张表）
 ```
 
-> 说明：MinIO 桶数据（`vibe-music-data/`）、本地工具链（`_reference/`）、`node_modules`、`target` 等大文件/本地数据**未纳入版本控制**，请按文档自行准备。
+> 说明：MinIO 桶数据（`vibe-music-data/`）、本地工具链（`_reference/`）、`node_modules`、`target` 等大文件/本地数据**未纳入版本控制**，请自行准备。文件类资源需自行准备 MinIO 桶 `vibe-music-data` 并设置匿名只读策略。
 
 ---
 
@@ -138,15 +132,14 @@ cd music-client; pnpm install --no-frozen-lockfile; pnpm dev  # 用户端 8090
 | 头像上传弹窗一直转圈 | Redis 业务缓存残留坏链；清缓存 + 浏览器 localStorage（`AudioStore`）|
 | MySQL 服务面板无法启动 | 服务为 Disabled，用 `mysqld --defaults-file=C:\MySQL\my.ini` 直启，或管理员执行 `sc config MySQL start= auto` |
 
-更详细的排查见 [启动使用手册.md](启动使用手册.md) 第 7 节与 [IDE启动指南.md](IDE启动指南.md) 第 5 节。
-
 ---
 
-## 八、文档索引
+## 八、启动顺序速查（IDE 方式）
 
-1. [IDE启动指南.md](IDE启动指南.md) — VS Code 启动前端 + IDEA 启动后端（推荐先看）
-2. [启动使用手册.md](启动使用手册.md) — 命令行启动、验证清单、故障排查
-3. [本地部署说明.md](本地部署说明.md) — 部署原理、环境准备、MinIO 资源恢复
-4. [封面上传修复报告.md](封面上传修复报告.md) — 上传弹窗卡死 / 缓存坏链修复
-5. [Copilot改动修复报告.md](Copilot改动修复报告.md) — Java 版本被误改等问题
-6. [环境安装配置报告.md](环境安装配置报告.md) — Node/pnpm/MinIO/JDK 安装与环境变量
+```
+MySQL(3306) → Redis(6379) → MinIO(9000) → 后端 IDEA Run(8080) → 前端 pnpm dev(8089/8090)
+```
+
+- VS Code 打开 `music-admin` / `music-client`，终端执行 `pnpm dev`（执行策略需为 `RemoteSigned`，改完环境变量请重开 VS Code）。
+- IDEA 打开 `music-server`，Project SDK 与 Maven Runner 均设为 JDK 17，运行 `VibeMusicServerApplication`。
+- 注意：pom 应为 `java.version=17` + Spring Boot `3.3.7`；若被改为 Java 25，IDEA 编译的 jar 在 JDK17 上将报 `UnsupportedClassVersionError`，需改回并用 JDK17 重新编译。
