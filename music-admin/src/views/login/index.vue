@@ -34,8 +34,8 @@ dataThemeChange(overallStyle.value);
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "YOUR_ADMIN_USERNAME",
-  password: "YOUR_ADMIN_PASSWORD"
+  username: "admin_1",
+  password: "123456abc"
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {
