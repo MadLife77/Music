@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import Motion from "./utils/motion";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
@@ -34,8 +34,8 @@ dataThemeChange(overallStyle.value);
 const { title } = useNav();
 
 const ruleForm = reactive({
-  username: "admin_1",
-  password: "123456abc"
+  username: "YOUR_ADMIN_USERNAME",
+  password: "YOUR_ADMIN_PASSWORD"
 });
 
 const onLogin = async (formEl: FormInstance | undefined) => {

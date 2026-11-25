@@ -1,145 +1,253 @@
 # Vibe Music 🎶
 
-一个基于 **Spring Boot 3 + Vue 3** 的前后端分离音乐网站（毕业设计项目），包含管理端、用户端和后端 API 服务。
+一个基于 **Spring Boot 3 + Vue 3** 的前后端分离音乐网站。本仓库将原开源项目的三个子项目整合在一起，并附带数据库脚本，方便一次性克隆、部署和运行。
 
-本项目为本地复刻部署版本，由三个子项目 + 数据库脚本组成，可在本机完整运行：歌曲/歌手/歌单/轮播管理、用户注册登录、收藏评论、在线播放（MinIO 对象存储）等功能。
+本项目参照以下三个上游仓库（致谢原作者），功能与结构上与其保持一致：
+
+- [Vibe Music Server](https://github.com/Alex-LiSun/vibe-music-server) — 后端 API 服务
+- [Vibe Music Admin](https://github.com/Alex-LiSun/vibe-music-admin) — 后台管理系统
+- [Vibe Music Client](https://github.com/Alex-LiSun/vibe-music-client) — Web 音乐播放器
 
 ---
 
-## 一、技术栈
+## 目录
+
+- [项目组成](#项目组成-)
+- [技术栈](#技术栈-)
+- [系统需求](#系统需求-)
+- [目录结构](#目录结构)
+- [安装与启动](#安装与启动-)
+- [项目脚本](#项目脚本-)
+- [演示与截图](#演示与截图-)
+- [常见问题](#常见问题-faq-)
+- [免责声明](#免责声明-)
+- [许可证与贡献](#许可证与贡献-)
+
+---
+
+## 项目组成 ✨
+
+### 1. Vibe Music Server（后端，`music-server/`）
+
+后端 API 服务，基于 **Spring Boot 3** 构建，采用 Java 17、Maven、MyBatis-Plus、MySQL、Redis 和 MinIO，为客户端和管理端提供数据支持与业务逻辑处理。
+
+- **用户认证与管理**：注册、登录、信息修改、头像上传、注销；管理员可查询、禁用/启用用户。
+- **内容管理**：歌手、歌曲、歌单的增删改查；歌曲文件上传；首页轮播图管理。
+- **用户互动**：歌曲/歌单评论的发表与删除；歌曲/歌单收藏与取消收藏；用户反馈提交与处理。
+- **文件服务**：使用 MinIO 存储音乐文件、头像、封面等静态资源。
+- **权限控制**：基于 JWT 与角色的 API 访问控制。
+- **数据缓存**：利用 Redis 缓存热点数据。
+- **邮件服务**：支持发送验证码等邮件通知（可选，需自行配置 SMTP）。
+
+### 2. Vibe Music Admin（后台管理，`music-admin/`）
+
+基于 [vue-pure-admin](https://github.com/pure-admin/vue-pure-admin) 模板开发的后台管理系统。管理员可通过本系统：
+
+- 用户管理：查看用户列表与详情、禁用或启用账号。
+- 歌手管理：添加、编辑、删除歌手，维护歌手资料。
+- 歌曲管理：添加、编辑、删除歌曲，管理歌曲资源。
+- 歌单管理：创建、编辑、删除歌单，管理推荐/用户歌单。
+- 反馈管理：查看、处理或删除用户反馈。
+- 轮播图管理：添加、编辑、删除首页轮播图。
+
+### 3. Vibe Music Client（Web 播放器，`music-client/`）
+
+现代化 Web 音乐播放器，界面设计借鉴了 [GlassMusicPlayer](https://github.com/XiangZi7/GlassMusicPlayer)。
+
+- **游客**：浏览歌曲/歌手/歌单，搜索与播放音乐，暗黑模式切换。
+- **注册用户**：登录/注销、编辑资料与头像、个性化推荐、评论点赞、收藏歌曲/歌单、歌曲下载。
+
+---
+
+## 技术栈 🛠️
 
 | 层 | 技术 |
 |---|---|
-| 后端 | Java 17、Spring Boot 3.3.7、MyBatis-Plus 3.5.9、MySQL 8、Redis、Druid、JWT (Auth0 java-jwt)、MinIO 8.5.9、Lombok、Spring Security Crypto |
-| 管理端 | Vue 3.5、Vite 6、TypeScript、Element Plus、Pinia、Vue Router 4、ECharts、Tailwind CSS、@pureadmin 组件库 |
-| 用户端 | Vue 3.5、Vite 6、TypeScript、Element Plus、Pinia（持久化）、Artplayer、unplugin-auto-import、Tailwind CSS |
-| 包管理 | pnpm 9.15.2 |
-| 对象存储 | MinIO（桶 `vibe-music-data`）|
-
-原项目参考（致谢）：
-- [vibe-music-server](https://github.com/Alex-LiSun/vibe-music-server)
-- [vibe-music-admin](https://github.com/Alex-LiSun/vibe-music-admin)
-- [vibe-music-client](https://github.com/Alex-LiSun/vibe-music-client)
+| 后端 | Spring Boot 3、Java 17、Maven、MyBatis-Plus、MySQL 8、Redis、Druid、JWT (java-jwt)、MinIO、Lombok、Spring Boot Validation、Java Mail |
+| 管理端 | Vue 3、Vite、TypeScript、Pinia、Vue Router、Element Plus、Tailwind CSS、ECharts |
+| 用户端 | Vue 3、Vite、TypeScript、Pinia、Element Plus、Tailwind CSS、Artplayer |
+| 包管理器 | pnpm |
 
 ---
 
-## 二、目录结构
+## 系统需求 ⚙️
+
+| 软件 | 版本要求 |
+|---|---|
+| JDK | 17 或更高版本 |
+| Maven | 3.6 或更高版本 |
+| Node.js | `^18.18.0 \|\| ^20.9.0 \|\| >=22.0.0`（管理端）；`>=18.12.0`（用户端）。仓库 `music-admin/.nvmrc` 给出了推荐版本 |
+| pnpm | `>=9` |
+| MySQL | 8.0 或更高版本 |
+| Redis | 推荐 6.0 或更高版本 |
+| MinIO | 最新稳定版 |
+
+---
+
+## 目录结构
 
 ```
 .
-├── music-admin/        # 管理端（Vue3 + Vite，端口 8089）
-├── music-client/       # 用户端（Vue3 + Vite，端口 8090）
-├── music-server/       # 后端（Spring Boot，端口 8080）
-└── music.sql           # 数据库建表 + 种子数据（11 张表）
+├── music-server/    # 后端 Spring Boot 服务（默认端口 8080）
+├── music-admin/     # 后台管理系统（默认端口 8089）
+├── music-client/    # Web 音乐播放器（默认端口 8090）
+└── music.sql        # 数据库建表脚本 + 种子数据
 ```
 
-> 说明：MinIO 桶数据（`vibe-music-data/`）、本地工具链（`_reference/`）、`node_modules`、`target` 等大文件/本地数据**未纳入版本控制**，请自行准备。文件类资源需自行准备 MinIO 桶 `vibe-music-data` 并设置匿名只读策略。
+> MinIO 桶数据（`vibe-music-data`）、依赖目录（`node_modules`）、构建产物（`target`/`dist`）未纳入版本控制，需自行准备。
 
 ---
 
-## 三、环境要求
+## 安装与启动 🚀
 
-| 软件 | 版本 | 说明 |
-|---|---|---|
-| JDK | 17（`JAVA_HOME=C:\JAVA\JAVA17`） | 后端编译与运行 |
-| Maven | 3.6+ | 已配置阿里云镜像 |
-| Node.js | 22.12.0（见 `.nvmrc`） | 前端 |
-| pnpm | 9.15.2 | 前端包管理 |
-| MySQL | 8.0+ | 数据库 `vibe_music` |
-| Redis | 5+/6+ | JWT token 缓存（db1） |
-| MinIO | 自编译稳定版 | 桶 `vibe-music-data`，公开读 |
+以下步骤为通用流程，路径、端口与凭据请按你自己的环境调整。
 
----
+### 1. 克隆仓库
 
-## 四、快速启动
-
-### 1. 初始化数据库
-
-```powershell
-$MYSQL='C:\MySQL\MySQL Server 8.0\bin\mysql.exe'
-& $MYSQL -uroot -p123456 -e "CREATE DATABASE IF NOT EXISTS vibe_music DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
-Get-Content 'music.sql' -Encoding UTF8 | & $MYSQL -uroot -p123456 --default-character-set=utf8mb4 vibe_music
+```bash
+git clone <本仓库地址>
+cd <仓库目录>
 ```
 
-导入后应有 11 张表（用户 64、歌曲 502、歌手 124、歌单 18 等种子数据）。
+### 2. 准备基础设施
 
-### 2. 启动基础设施（MySQL / Redis / MinIO）
+- 安装并启动 **MySQL 8.0+**，创建数据库：
+  ```sql
+  CREATE DATABASE vibe_music CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  ```
+  导入本仓库的 `music.sql`（含建表与种子数据）。
+- 安装并启动 **Redis**（默认端口 6379）。
+- 安装并启动 **MinIO**，创建名为 `vibe-music-data` 的 Bucket，并设置允许匿名读取（前端直接通过 URL 加载图片/音频）。
+- 音乐与图片资源文件需自行放入 MinIO 桶；原项目提供的下载方式见[原仓库说明](https://github.com/Alex-LiSun/vibe-music-server#文件下载-)。
 
-```powershell
-# MySQL（服务被禁用时用直启）
-Start-Process 'C:\MySQL\MySQL Server 8.0\bin\mysqld.exe' `
-  -ArgumentList @('--defaults-file=C:\MySQL\my.ini') -WindowStyle Hidden
+### 3. 配置后端
 
-# Redis
-$rd='C:\Users\Madlife\Documents\Redis-x64-5.0.14.1'
-Start-Process "$rd\redis-server.exe" -ArgumentList "$rd\redis.windows.conf" -WindowStyle Hidden
+修改 `music-server/src/main/resources/application.yml`，将下列占位项改为你自己的环境：
 
-# MinIO
-$env:MINIO_ROOT_USER='minioadmin'; $env:MINIO_ROOT_PASSWORD='minioadmin'
-Start-Process 'C:\Users\Madlife\Documents\vibe-tools\minio\bin\minio.exe' `
-  -ArgumentList @('server','<桶数据目录>','--address',':9000','--console-address',':9001') -WindowStyle Hidden
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://YOUR_MYSQL_HOST:3306/vibe_music?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: YOUR_MYSQL_USER
+    password: YOUR_MYSQL_PASSWORD
+  data:
+    redis:
+      host: YOUR_REDIS_HOST
+      port: 6379
+      password: YOUR_REDIS_PASSWORD   # 无密码可留空
+      database: 1
+  mail:                                # 可选：需要验证码功能时配置
+    host: smtp.example.com
+    username: your-email@example.com
+    password: YOUR_EMAIL_APP_PASSWORD
+
+minio:
+  endpoint: http://YOUR_MINIO_HOST:9000
+  accessKey: YOUR_MINIO_ACCESS_KEY
+  secretKey: YOUR_MINIO_SECRET_KEY
+  bucket: vibe-music-data
 ```
 
-### 3. 启动后端（端口 8080）
+> 请勿将生产环境的真实密码提交到代码库，建议使用环境变量或本地未跟踪的配置文件管理。
 
-用 IDEA 打开 `music-server`，**Project SDK 设为 JDK 17**，运行 `cn.edu.seig.vibemusic.VibeMusicServerApplication`。
-或命令行：
+### 4. 启动后端（端口 8080）
 
-```powershell
-mvn -f music-server/pom.xml clean package -DskipTests
-java -jar music-server/target/vibe-music-server-0.0.1-SNAPSHOT.jar
+```bash
+cd music-server
+mvn clean package -DskipTests
+java -jar target/vibe-music-server-*.jar
 ```
 
-### 4. 启动前端（端口 8089 / 8090）
+或使用 IDEA 打开 `music-server`，将 Project SDK 与 Maven Runner JRE 设置为 JDK 17，运行 `cn.edu.seig.vibemusic.VibeMusicServerApplication`。
 
-```powershell
-cd music-admin; pnpm install --no-frozen-lockfile; pnpm dev   # 管理端 8089
-cd music-client; pnpm install --no-frozen-lockfile; pnpm dev  # 用户端 8090
+### 5. 配置并启动前端
+
+两个前端的 API 地址默认指向后端服务。若后端地址不同，修改对应配置：
+
+- 管理端：`music-admin/src/utils/http/index.ts` 中的 `baseURL`
+- 用户端：`music-client/src/utils/http.ts` 中的 `baseURL`（也可参考 `.env.development` 中的 `VITE_APP_BASE_API`）
+
+```bash
+# 后台管理 8089
+cd music-admin
+pnpm install
+pnpm dev
+
+# Web 播放器 8090
+cd ../music-client
+pnpm install
+pnpm dev
 ```
 
----
+> 提示：若 `pnpm dev` 在 PowerShell 报"禁止运行脚本"，可将当前用户执行策略设为 `RemoteSigned` 后重开终端。
 
-## 五、访问地址与账号
+### 6. 访问
 
-| 服务 | 地址 |
+| 服务 | 默认地址 |
 |---|---|
-| 用户端 | http://localhost:8090 |
-| 管理端 | http://localhost:8089 |
+| Web 播放器 | http://localhost:8090 |
+| 后台管理 | http://localhost:8089 |
 | 后端 API | http://localhost:8080 |
-| MinIO 控制台 | http://localhost:9001（minioadmin / minioadmin）|
+| MinIO 控制台 | http://localhost:9001 |
 
-**管理端账号**：`admin_172` / `123456abc`（另有 `admin_888` 等 79 个同密码账号）
-
-**用户端**：使用种子用户邮箱 + 密码登录（发验证码功能因无真实 SMTP 不可用，密码登录正常）
+管理端可使用数据库种子中的管理员账号登录（账号密码见 `music.sql` 的 `tb_admin` 表；种子密码仅供演示，部署到公网前请务必更换）。
 
 ---
 
-## 六、配置文件说明
+## 项目脚本 📜
 
-- `music-server/src/main/resources/application.yml`：数据库连接（root/123456）、Redis（127.0.0.1:6379 db1）、MinIO（127.0.0.1:9000 / minioadmin / vibe-music-data）、邮件占位配置。
-- `music-admin/.env*`、`music-client/.env*`：前端端口、路由模式、API 地址（两端 API baseURL 均硬编码 `http://localhost:8080`）。
-- **注意**：以上均为本地开发占位凭据，部署到公网前务必修改。
+**后端（Maven）**
+
+- `mvn clean`：清理构建产物
+- `mvn compile`：编译
+- `mvn test`：运行测试
+- `mvn package`：打包为可执行 JAR
+- `mvn spring-boot:run`：开发模式启动
+- `java -jar target/*.jar`：运行打包后的 JAR
+
+**前端（pnpm）**
+
+- `pnpm dev`：启动开发服务器
+- `pnpm build`：构建生产版本
+- `pnpm preview`：预览生产构建
+- `pnpm lint` / `pnpm format`：代码检查与格式化
 
 ---
 
-## 七、常见问题速查
+## 演示与截图 📺
 
-| 现象 | 处理 |
-|---|---|
-| `pnpm dev` 报"禁止运行脚本" | 确认 PowerShell 执行策略 `RemoteSigned`，重开终端 |
-| 后端报 `UnsupportedClassVersionError: 69.0` | pom 被改成 Java 25；改回 `<java.version>17</java.version>` + Boot 3.3.7，用 JDK17 重新编译 |
-| 图片碎图 / 9000 连接拒绝 | 启动 MinIO；桶需设置匿名只读策略 |
-| 头像上传弹窗一直转圈 | Redis 业务缓存残留坏链；清缓存 + 浏览器 localStorage（`AudioStore`）|
-| MySQL 服务面板无法启动 | 服务为 Disabled，用 `mysqld --defaults-file=C:\MySQL\my.ini` 直启，或管理员执行 `sc config MySQL start= auto` |
+- 演示视频：[Bilibili](https://www.bilibili.com/video/BV1tKJ8z8E6z/)
+- 原项目截图：[管理端](https://github.com/Alex-LiSun/vibe-music-admin#项目截图-) · [用户端](https://github.com/Alex-LiSun/vibe-music-client#项目截图-)
 
 ---
 
-## 八、启动顺序速查（IDE 方式）
+## 常见问题 (FAQ) ❓
 
-```
-MySQL(3306) → Redis(6379) → MinIO(9000) → 后端 IDEA Run(8080) → 前端 pnpm dev(8089/8090)
-```
+- **后端启动失败，提示数据库连接错误？**
+  检查 `application.yml` 中 `spring.datasource` 的 URL、用户名、密码；确认 MySQL 已运行、数据库已创建且字符集正确、用户有访问权限。
+- **后端启动失败，提示 Redis 连接错误？**
+  检查 `spring.data.redis` 的 host、port、password；确认 Redis 已运行且可达。
+- **文件上传失败或图片无法访问？**
+  检查 `minio` 配置；确认 MinIO 已运行、`vibe-music-data` Bucket 已创建、Bucket 策略允许匿名读取/应用有读写权限；检查 `spring.servlet.multipart` 的文件大小限制。
+- **端口冲突？**
+  修改 `application.yml` 的 `server.port`，或结束占用 8080/8089/8090 端口的进程。
+- **前端 API 无法访问？**
+  确认后端已启动；检查前端 `baseURL` / `VITE_APP_BASE_API` 与后端地址一致；用浏览器开发者工具 Network 面板查看请求与 CORS 错误；检查防火墙/代理设置。
+- **Java 版本错误（class file version 不匹配）？**
+  请使用 JDK 17 编译与运行，并确保 `pom.xml` 中 `java.version` 为 17。
 
-- VS Code 打开 `music-admin` / `music-client`，终端执行 `pnpm dev`（执行策略需为 `RemoteSigned`，改完环境变量请重开 VS Code）。
-- IDEA 打开 `music-server`，Project SDK 与 Maven Runner 均设为 JDK 17，运行 `VibeMusicServerApplication`。
-- 注意：pom 应为 `java.version=17` + Spring Boot `3.3.7`；若被改为 Java 25，IDEA 编译的 jar 在 JDK17 上将报 `UnsupportedClassVersionError`，需改回并用 JDK17 重新编译。
+---
+
+## 免责声明 ⚠️
+
+本项目仅供学习和技术研究使用。应用展示的音乐、用户数据等均由你自行部署的服务承载，请在遵守所在地法律法规与版权政策的前提下使用：
+
+- **请勿用于任何商业用途。**
+- 项目作者不对使用本项目产生的任何直接或间接问题、数据安全风险、版权纠纷或经济损失承担责任。
+- 使用者需自行确保数据来源合法合规，以及依赖服务的安全稳定运行。
+
+---
+
+## 许可证与贡献 📄❤️
+
+本项目采用 MIT 许可证。欢迎提交 Issue、Pull Request 或提出建议。
