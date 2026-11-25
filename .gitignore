@@ -1,0 +1,22 @@
+# 本地运行产生的大文件 / 工具链（绝不推送）
+# _reference: 工具链(Go/Node/MinIO)、参考仓库克隆、缓存与日志，约 8.5GB
+_reference/
+# vibe-music-data: MinIO 桶文件，约 3.7GB，数据不入库
+vibe-music-data/
+# Redis 快照
+dump.rdb
+
+# 通用
+node_modules/
+dist/
+target/
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Copilot 的 Java 升级 hooks（会再把 pom 改成 Java 25，不推送）
+.github/
+
+# 敏感信息提醒：推送前确认 application.yml 用本地开发占位凭据
+# MySQL root/123456；MinIO minioadmin/minioadmin

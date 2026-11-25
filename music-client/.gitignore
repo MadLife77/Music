@@ -1,0 +1,32 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+dist-ssr/
+*.local
+
+# Vite / 缓存
+.vite/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+node_modules/.vite/
+
+# 环境变量本地覆盖
+.env.local
+.env.*.local
+
+# IDE / 系统
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# 日志
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
