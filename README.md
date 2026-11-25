@@ -1,4 +1,4 @@
-# Vibe Music 🎶
+﻿# Vibe Music 🎶
 
 一个基于 **Spring Boot 3 + Vue 3** 的前后端分离音乐网站。本仓库将原开源项目的三个子项目整合在一起，并附带数据库脚本，方便一次性克隆、部署和运行。
 
@@ -17,6 +17,7 @@
 - [系统需求](#系统需求-)
 - [目录结构](#目录结构)
 - [安装与启动](#安装与启动-)
+- [使用 IDE 启动（VS Code + IDEA）](#使用-ide-启动vs-code--idea)
 - [项目脚本](#项目脚本-)
 - [演示与截图](#演示与截图-)
 - [常见问题](#常见问题-faq-)
@@ -191,6 +192,87 @@ pnpm dev
 | MinIO 控制台 | http://localhost:9001 |
 
 管理端可使用数据库种子中的管理员账号登录（账号密码见 `music.sql` 的 `tb_admin` 表；种子密码仅供演示，部署到公网前请务必更换）。
+
+---
+
+## 使用 IDE 启动（VS Code + IDEA）💻
+
+如果你更习惯用 IDE 分别启动前后端，可按以下方式操作。以下步骤与命令行方式**共用同一份代码与配置**，两种方式不要同时对同一端口启动。
+
+### 前置条件
+
+- 基础设施（MySQL、Redis、MinIO）已按上文"安装与启动"准备好并正在运行。
+- 已正确配置 `music-server/src/main/resources/application.yml` 与两个前端的 API 地址。
+- **若此前修改过环境变量（PATH、执行策略等），请完全关闭并重新打开 VS Code / IDEA**，否则新终端无法感知。
+
+### 1. VS Code 启动 music-admin（后台管理，8089）
+
+1. 用 VS Code 打开仓库中的 `music-admin` 目录。
+2. 打开集成终端（`Ctrl + ` `），确认工具链可用：
+   ```powershell
+   node -v     # 输出 Node.js 版本，应满足系统需求
+   pnpm -v     # 输出 pnpm 版本，应满足系统需求
+   ```
+   若提示命令不存在或"禁止运行脚本"，请重开 VS Code，并确认 PowerShell 执行策略允许运行本地脚本（可将当前用户策略设为 `RemoteSigned`）。
+3. 首次运行安装依赖（以后可跳过）：
+   ```powershell
+   pnpm install
+   ```
+4. 启动开发服务器：
+   ```powershell
+   pnpm dev
+   ```
+   看到 `VITE` 就绪提示与 `http://localhost:8089/` 即成功。
+5. 浏览器访问 <http://localhost:8089> 并使用种子管理员账号登录。
+6. 停止：在终端按 `Ctrl + C`。
+
+### 2. VS Code 启动 music-client（Web 播放器，8090）
+
+1. 另开一个 VS Code 窗口，打开仓库中的 `music-client` 目录。
+2. 打开集成终端，确认 `node -v` / `pnpm -v` 正常。
+3. 首次运行安装依赖：
+   ```powershell
+   pnpm install
+   ```
+4. 启动：
+   ```powershell
+   pnpm dev
+   ```
+   看到 `http://localhost:8090/` 即成功。
+5. 浏览器访问 <http://localhost:8090>。
+6. 停止：在终端按 `Ctrl + C`。
+
+> 建议两个前端各用一个终端，日志分开便于排查。
+
+### 3. IDEA 启动 music-server（后端，8080）
+
+1. 用 IDEA 打开仓库中的 `music-server` 目录（Maven 项目），等待依赖导入完成。
+2. **设置 JDK 17（关键）**：
+   - `File → Project Structure`（`Ctrl+Alt+Shift+S`）→ `Project`：SDK 选择 JDK 17（没有就点 `Add JDK...` 选择本机 JDK 17 安装目录），Language level 选 `17`。
+   - `Modules → Sources` 的 Language level 同样设为 `17`。
+3. **设置 Maven Runner JRE**：`Settings → Build, Execution, Deployment → Build Tools → Maven → Runner`，JRE 选择同一个 JDK 17。
+4. 确认 `pom.xml` 中 Spring Boot 父版本与 `<java.version>` 与项目要求一致（Java 17）。若曾升级到更高 Java 版本，需改回并用 JDK 17 重新构建，否则运行时会报 `UnsupportedClassVersionError`。
+5. 展开 `src/main/java/cn/edu/seig/vibemusic`，右键 `VibeMusicServerApplication.java` → `Run 'VibeMusicServerApplication'`（或点击绿色三角）。
+6. 控制台出现 `Tomcat started on port 8080` 与 `Started VibeMusicServerApplication` 即成功。
+7. 验证：访问 <http://localhost:8080/banner/getBannerList>，应返回 `"code": 0` 与轮播数据。
+
+### 4. 推荐启动顺序
+
+```
+MySQL(3306) → Redis(6379) → MinIO(9000) → IDEA 后端(8080) → 两个 VS Code 前端(8089 / 8090)
+```
+
+### 5. IDE 场景常见问题
+
+| 现象 | 处理 |
+|---|---|
+| VS Code 中 `pnpm` 命令不存在或禁止运行脚本 | 重开 VS Code；确认执行策略允许本地脚本（如 `RemoteSigned`） |
+| `node -v` 版本不符合系统需求 | 关闭终端重开；确认 PATH 指向期望的 Node 版本 |
+| 后端报 `UnsupportedClassVersionError` | 用 JDK 17 编译运行，确认 `pom.xml` 的 `java.version` 为 17 |
+| IDEA 能启动但命令行 jar 启动失败 | 两者使用了不同 JDK，请统一为 JDK 17 |
+| 前端启动后图片碎图 / 连接 9000 被拒 | 确认 MinIO 已启动且 Bucket 已配置匿名读取 |
+| 登录返回 401 | 确认 Redis 已启动，然后重新登录 |
+| 后端报数据库连接失败 | 确认 MySQL 已启动且 `application.yml` 配置正确 |
 
 ---
 
